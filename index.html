@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Random Friend Picker — React</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --bg:#f7f7fb; --card:#ffffff; --text:#111827; --muted:#6b7280; --border:#e5e7eb; --pri:#6366f1; --ok:#10b981; --warn:#a78bfa; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background: var(--bg); color: var(--text);}
+    .wrap { max-width: 980px; margin: 40px auto; padding: 0 16px; }
+    .title { font-size: 28px; font-weight: 800; margin: 0 0 16px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.03); }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; }
+    input, select, button { font: inherit; }
+    input, select { padding: 10px 12px; border:1px solid var(--border); border-radius: 10px; min-width: 220px; background: white; }
+    button { padding: 10px 14px; border: 0; border-radius: 10px; cursor: pointer; }
+    .btn { background: var(--pri); color: white; }
+    .btn.ok { background: var(--ok); }
+    .btn.warn { background: var(--warn); }
+    .btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .col { display: grid; gap: 12px; }
+    .grid { display: grid; grid-template-columns: 280px 1fr; gap: 16px; }
+    @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+    .list { padding:0; margin:0; list-style:none; }
+    .item { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; border:1px solid var(--border); border-radius:10px; }
+    .muted { color: var(--muted); }
+    .pill { font-size: 12px; padding: 4px 8px; border-radius: 999px; border:1px solid var(--border); background:#fafafa; }
+    .result { font-size: 22px; font-weight: 700; margin-top: 8px; }
+    .spin { animation: spin 0.9s linear infinite; display:inline-block; }
+    @keyframes spin { from { transform: rotate(0deg);} to {transform: rotate(360deg);} }
+    .space { height: 6px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 class="title">🎲 Random Friend Picker — React</h1>
+    <div id="root"></div>
+  </div>
+
+  <!-- React 18 + Babel (for JSX in the browser) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useEffect, useMemo, useState } = React;
+
+    // small helpers
+    const uid = () => Math.random().toString(36).slice(2, 9);
+    const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
+    const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+    function App() {
+      // groups: [{id, name, friends:[{id,name}], history:[{id,friendId,name,ts}]}]
+      const [groups, setGroups] = useState(() => load("rf_groups", []));
+      const [selectedId, setSelectedId] = useState(() => load("rf_selected", null));
+      const [groupName, setGroupName] = useState("");
+      const [friendName, setFriendName] = useState("");
+      const [spinning, setSpinning] = useState(false);
+      const [currentPick, setCurrentPick] = useState(null); // temp spinning name
+      const selected = useMemo(
+        () => groups.find(g => g.id === selectedId) || null,
+        [groups, selectedId]
+      );
+
+      useEffect(() => save("rf_groups", groups), [groups]);
+      useEffect(() => save("rf_selected", selectedId), [selectedId]);
+
+      // group ops
+      const addGroup = () => {
+        const n = groupName.trim();
+        if (!n) return;
+        if (groups.some(g => g.name.toLowerCase() === n.toLowerCase())) return alert("Group already exists.");
+        const g = { id: uid(), name: n, friends: [], history: [] };
+        setGroups(prev => [g, ...prev]);
+        setSelectedId(g.id);
+        setGroupName("");
+      };
+      const deleteGroup = (id) => {
+        setGroups(prev => prev.filter(g => g.id !== id));
+        if (selectedId === id) setSelectedId(null);
+      };
+      const renameGroup = (id, newName) => {
+        const n = newName.trim();
+        if (!n) return;
+        setGroups(prev => prev.map(g => g.id === id ? { ...g, name: n } : g));
+      };
+
+      // friend ops
+      const addFriend = () => {
+        if (!selected) return;
+        const n = friendName.trim();
+        if (!n) return;
+        if (selected.friends.some(f => f.name.toLowerCase() === n.toLowerCase())) {
+          setFriendName(""); return;
+        }
+        const friend = { id: uid(), name: n };
+        setGroups(prev => prev.map(g => g.id === selected.id ? { ...g, friends: [friend, ...g.friends] } : g));
+        setFriendName("");
+      };
+      const removeFriend = (fid) => {
+        if (!selected) return;
+        setGroups(prev => prev.map(g => g.id === selected.id ? { ...g, friends: g.friends.filter(f => f.id !== fid) } : g));
+      };
+
+      // draw
+      const drawRandom = () => {
+        if (!selected || selected.friends.length === 0) return;
+        const pool = selected.friends.map(f => f.name);
+        setSpinning(true);
+        let t = 0;
+        const duration = 1200; // ms
+        const interval = 70;
+        const timer = setInterval(() => {
+          const n = pool[Math.floor(Math.random() * pool.length)];
+          setCurrentPick(n);
+          t += interval;
+          if (t >= duration) {
+            clearInterval(timer);
+            const final = selected.friends.find(f => f.name === n);
+            // push to history
+            setGroups(prev => prev.map(g => g.id === selected.id
+              ? { ...g, history: [{ id: uid(), friendId: final.id, name: final.name, ts: Date.now() }, ...g.history] }
+              : g
+            ));
+            setSpinning(false);
+          }
+        }, interval);
+      };
+      const clearHistory = () => {
+        if (!selected) return;
+        setGroups(prev => prev.map(g => g.id === selected.id ? { ...g, history: [] } : g));
+      };
+
+      return (
+        <div className="grid">
+          {/* sidebar */}
+          <aside className="card col">
+            <div className="col">
+              <div className="row">
+                <input
+                  placeholder="New group name"
+                  value={groupName}
+                  onChange={e => setGroupName(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && addGroup()}
+                />
+                <button className="btn" onClick={addGroup}>Add Group</button>
+              </div>
+              <div className="space"></div>
+              <ul className="list col">
+                {groups.length === 0 && (
+                  <li className="muted">No groups yet — add one above.</li>
+                )}
+                {groups.map(g => (
+                  <li key={g.id} className="item">
+                    <button className="pill" onClick={() => setSelectedId(g.id)}>
+                      {selectedId === g.id ? "• " : ""}{g.name}
+                    </button>
+                    <div className="row">
+                      <button className="btn ghost" onClick={() => {
+                        const nn = prompt("Rename group:", g.name);
+                        if (nn != null) renameGroup(g.id, nn);
+                      }}>Rename</button>
+                      <button className="btn ghost" onClick={() => deleteGroup(g.id)}>Delete</button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </aside>
+
+          {/* main */}
+          <main className="col" style={{ minHeight: 300 }}>
+            {!selected ? (
+              <div className="card muted">Select or create a group to begin.</div>
+            ) : (
+              <>
+                <div className="card col">
+                  <div className="row" style={{ alignItems: "center", justifyContent: "space-between" }}>
+                    <h2 style={{ margin: 0 }}>{selected.name}</h2>
+                    <span className="pill">{selected.friends.length} friend{selected.friends.length === 1 ? "" : "s"}</span>
+                  </div>
+                  <div className="row">
+                    <input
+                      placeholder="Friend name"
+                      value={friendName}
+                      onChange={e => setFriendName(e.target.value)}
+                      onKeyDown={e => e.key === "Enter" && addFriend()}
+                    />
+                    <button className="btn ok" onClick={addFriend}>Add Friend</button>
+                    <button className="btn warn" onClick={drawRandom} disabled={spinning || selected.friends.length === 0}>
+                      {spinning ? "Picking..." : "Pick Random"}
+                    </button>
+                  </div>
+
+                  {currentPick && (
+                    <div className="result">
+                      {spinning ? <span className="spin">✨</span> : "🎉"} {currentPick}{spinning ? "" : " was chosen!"}
+                    </div>
+                  )}
+                </div>
+
+                <div className="row" style={{ alignItems: "start" }}>
+                  <div className="card col" style={{ flex: 1 }}>
+                    <h3 style={{ marginTop: 0 }}>Friends</h3>
+                    <ul className="list col">
+                      {selected.friends.length === 0 && <li className="muted">No friends yet.</li>}
+                      {selected.friends.map(f => (
+                        <li key={f.id} className="item">
+                          <span>{f.name}</span>
+                          <button className="btn ghost" onClick={() => removeFriend(f.id)}>Remove</button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="card col" style={{ flex: 1 }}>
+                    <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+                      <h3 style={{ marginTop: 0 }}>History</h3>
+                      <button className="btn ghost" onClick={clearHistory} disabled={selected.history.length === 0}>Clear</button>
+                    </div>
+                    <ul className="list col">
+                      {selected.history.length === 0 && <li className="muted">No picks yet.</li>}
+                      {selected.history.map(h => (
+                        <li key={h.id} className="item">
+                          <span>{h.name}</span>
+                          <span className="muted">{new Date(h.ts).toLocaleString()}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </>
+            )}
+          </main>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<React.StrictMode><App /></React.StrictMode>);
+  </script>
+</body>
+</html>
