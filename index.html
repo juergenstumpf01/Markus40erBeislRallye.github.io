@@ -1,1 +1,255 @@
-<h1> welcome maggus </h1>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Markus' 40er Beislrallye</title>
+  <style>
+    /* 🌈 Animated background */
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      color: #fff;
+      display: grid;
+      min-height: 100svh;
+      place-items: center;
+      padding: 16px;
+      background: linear-gradient(270deg, #6a11cb, #2575fc, #09fbd3, #fe53bb);
+      background-size: 1000% 1000%;
+      animation: gradientMove 25s ease infinite;
+    }
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .card {
+      width: min(780px, 100%);
+      background: rgba(0, 0, 0, 0.55);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, .5);
+      backdrop-filter: blur(8px);
+      text-align: center;
+      position: relative;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(1.4rem, 5vw, 2rem);
+      font-weight: 800;
+    }
+    p.subtitle {
+      margin: 0 0 20px;
+      opacity: .9;
+      font-size: 1rem;
+    }
+
+    /* 🖼️ Layout: closer spacing */
+    .photo-gallery {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      justify-items: center;
+      gap: 6px; /* reduced gap */
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .side-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px; /* closer vertical spacing */
+    }
+
+    .photo-gallery img {
+      border-radius: 12px;
+      object-fit: cover;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .4));
+      transition: transform 0.3s ease;
+    }
+
+    /* 💪 Hero Maggus */
+    .main {
+      width: 85%;
+      max-width: 420px;
+      position: relative;
+      z-index: 3;
+      animation: wiggle-main 4s ease-in-out infinite;
+    }
+
+    /* Smaller side pics */
+    .small {
+      width: 120px;
+      opacity: 0.9;
+    }
+
+    /* 😎 Wiggle Animations - unique per image */
+    .side-column img:nth-child(1) { animation: wiggle-left1 5s ease-in-out infinite; }
+    .side-column img:nth-child(2) { animation: wiggle-left2 6s ease-in-out infinite; }
+    .side-column img:nth-child(3) { animation: wiggle-left3 4.5s ease-in-out infinite; }
+    .side-column:last-child img:nth-child(1) { animation: wiggle-right1 5.5s ease-in-out infinite; }
+    .side-column:last-child img:nth-child(2) { animation: wiggle-right2 6.5s ease-in-out infinite; }
+
+    /* Different motion paths for each wiggle */
+    @keyframes wiggle-left1 {
+      0%,100% { transform: translate(0,0) rotate(0deg); }
+      25% { transform: translate(-4px, -6px) rotate(-2deg); }
+      50% { transform: translate(5px, 3px) rotate(2deg); }
+      75% { transform: translate(-3px, 2px) rotate(-1deg); }
+    }
+    @keyframes wiggle-left2 {
+      0%,100% { transform: translate(0,0) rotate(0deg); }
+      20% { transform: translate(-3px, 4px) rotate(2deg); }
+      50% { transform: translate(4px, -5px) rotate(-1.5deg); }
+      80% { transform: translate(-2px, 3px) rotate(1deg); }
+    }
+    @keyframes wiggle-left3 {
+      0%,100% { transform: translate(0,0) rotate(0deg); }
+      30% { transform: translate(3px, 3px) rotate(2deg); }
+      60% { transform: translate(-4px, -4px) rotate(-2deg); }
+    }
+    @keyframes wiggle-right1 {
+      0%,100% { transform: translate(0,0) rotate(0deg); }
+      25% { transform: translate(4px, -4px) rotate(2deg); }
+      50% { transform: translate(-5px, 3px) rotate(-2deg); }
+      75% { transform: translate(2px, -2px) rotate(1deg); }
+    }
+    @keyframes wiggle-right2 {
+      0%,100% { transform: translate(0,0) rotate(0deg); }
+      20% { transform: translate(2px, 5px) rotate(1.5deg); }
+      45% { transform: translate(-3px, -3px) rotate(-1.5deg); }
+      70% { transform: translate(3px, -2px) rotate(1deg); }
+    }
+    @keyframes wiggle-main {
+      0%,100% { transform: translate(0,0) rotate(0deg); }
+      25% { transform: translate(5px, -5px) rotate(1deg); }
+      50% { transform: translate(-5px, 5px) rotate(-1deg); }
+      75% { transform: translate(4px, -4px) rotate(0.5deg); }
+    }
+
+    @media (max-width: 600px) {
+      .main { width: 90%; }
+      .small { width: 80px; }
+    }
+
+    /* Countdown */
+    .countdown {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .tile {
+      background: rgba(255, 255, 255, .15);
+      border-radius: 12px;
+      text-align: center;
+      padding: 12px 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, .3);
+      backdrop-filter: blur(4px);
+    }
+    .num {
+      font-size: clamp(1.6rem, 6vw, 2.2rem);
+      font-weight: 900;
+      line-height: 1.2;
+      background: linear-gradient(90deg, #ff3cac, #784ba0, #2b86c5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.15);} }
+    .label { font-size: .85rem; opacity: .9; }
+    .expired {
+      margin-top: 16px;
+      font-weight: 600;
+      color: #fff;
+      background: rgba(255,0,0,0.4);
+      display: none;
+      border-radius: 10px;
+      padding: 6px 10px;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Markus' 40er Beislrallye 🎉</h1>
+    <p class="subtitle">Freitog, 24 Oct 2025, 18:00</p>
+
+    <!-- 👇 PHOTO GALLERY -->
+    <div class="photo-gallery">
+      <!-- LEFT COLUMN -->
+      <div class="side-column">
+
+
+        <img src="jürgen.png" alt="side" class="small">
+        <img src="michi.png" alt="side" class="small">
+        <img src="liebi.png" alt="side" class="small">
+      </div>
+
+      <!-- CENTER IMAGE -->
+      <div class="center-image">
+        <img src="maggus2.png" alt="main" class="main">
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="side-column">
+        <img src="kochi.png" alt="side" class="small">
+        <img src="mo.png" alt="side" class="small">
+      </div>
+    </div>
+
+    <!-- Countdown -->
+    <section class="countdown" aria-live="polite" aria-atomic="true">
+      <div class="tile"><div class="num" id="dd">--</div><div class="label">Days</div></div>
+      <div class="tile"><div class="num" id="hh">--</div><div class="label">Hours</div></div>
+      <div class="tile"><div class="num" id="mm">--</div><div class="label">Minutes</div></div>
+      <div class="tile"><div class="num" id="ss">--</div><div class="label">Seconds</div></div>
+    </section>
+
+    <div id="expired" class="expired">🍻 The party has started! 🍻</div>
+  </main>
+
+  <script>
+    /* Countdown logic */
+    function zonedTimeToUtcTimestamp(parts, timeZone) {
+      const utcGuess = new Date(Date.UTC(parts.y, parts.m - 1, parts.d, parts.h, parts.mi || 0, parts.s || 0));
+      const asZoned = new Date(utcGuess.toLocaleString('en-US', { timeZone }));
+      const diff = utcGuess.getTime() - asZoned.getTime();
+      return utcGuess.getTime() - diff;
+    }
+    const TARGET_TS = zonedTimeToUtcTimestamp(
+      { y: 2025, m: 10, d: 24, h: 18, mi: 0, s: 0 },
+      'Europe/Vienna'
+    );
+    const els = {
+      d: document.getElementById('dd'),
+      h: document.getElementById('hh'),
+      m: document.getElementById('mm'),
+      s: document.getElementById('ss'),
+      expired: document.getElementById('expired')
+    };
+    function tick() {
+      const now = Date.now();
+      let delta = Math.max(0, TARGET_TS - now);
+      if (delta === 0) els.expired.style.display = 'block';
+      const sec = Math.floor(delta / 1000);
+      const days = Math.floor(sec / 86400);
+      const hours = Math.floor((sec % 86400) / 3600);
+      const mins = Math.floor((sec % 3600) / 60);
+      const secs = sec % 60;
+      els.d.textContent = String(days);
+      els.h.textContent = String(hours).padStart(2, '0');
+      els.m.textContent = String(mins).padStart(2, '0');
+      els.s.textContent = String(secs).padStart(2, '0');
+    }
+    tick();
+    const timer = setInterval(() => {
+      tick();
+      if (Date.now() >= TARGET_TS) clearInterval(timer);
+    }, 1000);
+  </script>
+</body>
+</html>
